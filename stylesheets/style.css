@@ -1,0 +1,153 @@
+body {
+	background-color:#555555;
+
+	font-size:62.5%;             /* Explained @ www.clagnut.com/blog/348/ */
+	padding: 0px;
+	font-family:Verdana, Arial, Helvetica, sans-serif;
+}
+
+pre {
+	font-size: 11px;
+}
+
+a {
+	text-decoration: none;
+	color: #0000FF;
+}
+a img {
+	border: 0px solid black;
+}
+a:hover, a:active {
+	text-decoration: underline;
+}
+
+.frame { padding: 0px 12px 0px; margin: 7px 0px 28px; }
+span.bottom,span.top { display: block; height: 7px; clear:both;}
+span.top { margin: 0px -12px 0px; position: relative; top: -7px; }
+span.bottom { margin: 0px -12px 0px; position: relative; top: 7px; }
+
+
+/* The left column */
+#left {
+	width: 276px !important; /* 276px - padding (2x12px) */
+	width /**/:300px;
+	background: url(../images/kadertje_300_grey-white_bg.gif) repeat-y top;
+	
+	margin-left: 100px;
+	float: left;
+}
+#left span.top {
+	background: url(../images/kadertje_300_grey-white_top.gif) no-repeat top;
+}
+#left span.bottom {
+	background: url(../images/kadertje_300_grey-white_bot.gif) no-repeat bottom;
+}
+#left td {
+	border-bottom-style:dotted;
+	border-bottom-width:2px;
+	border-bottom-color:#999999;
+	
+}
+
+/* The middle column */
+
+#middle {
+	width: 276px !important; /* 276px - padding (2x12px) */
+	width /**/:300px;
+	background: url(../images/kadertje_300_grey-white_bg.gif) repeat-y top;
+	
+	margin-left: 100px;
+ 	float: left;
+}
+#middle span.top {
+	background: url(../images/kadertje_300_grey-white_top.gif) no-repeat top;
+}
+#middle span.bottom {
+	background: url(../images/kadertje_300_grey-white_bot.gif) no-repeat bottom;
+}
+
+/* A wider column */
+
+#wide {
+	width: 476px !important; /* 476px - padding (2x12px) */
+	width /**/:500px;
+	background: url(../images/kadertje_500_grey-white_bg.gif) repeat-y top;
+	
+	clear: both;
+ 	float: left;
+}
+#wide span.bottom {
+	background: url(../images/kadertje_500_grey-white_bot.gif) no-repeat bottom;
+}
+#wide span.top {
+	background: url(../images/kadertje_500_grey-white_top.gif) no-repeat top;
+}
+
+/* The widest column */
+
+#widest {
+	width: 776px !important; /* 476px - padding (2x12px) */
+	width /**/:800px;
+	background: url(../images/kadertje_800_grey-white_bg.gif) repeat-y top;
+	
+	margin-left: 100px;
+ 	float: left;
+}
+#widest span.top {
+	background: url(../images/kadertje_800_grey-white_top.gif) no-repeat top;
+}
+#widest span.bottom {
+	background: url(../images/kadertje_800_grey-white_bot.gif) no-repeat bottom;
+}
+
+/* The menu */
+#menu {
+	width: 234px !important; /* 258px - padding (2x12px) */
+	width /**/:258px;
+	background: url(../images/kadertje_258_grey-white_bg.gif) repeat-y top;
+	
+	margin-left: 100px;
+	float: left;
+}
+#menu span.top {
+	background: url(../images/kadertje_258_grey-white_top.gif) no-repeat top;
+}
+#menu span.bottom {
+	background: url(../images/kadertje_258_grey-white_bottom.gif) no-repeat bottom;
+}
+
+
+.statistic td {
+	text-align: center;
+}
+div#error {
+        height: auto;
+        width: 400px;
+        padding: 5px;
+        margin: 10px auto;
+        text-align: center;
+        font-weight: bold;
+        padding: 20px;
+        border: 1px solid #B31800;
+        background-color: #FFC8BF;
+}
+div#notice {
+        height: auto;
+        width: 400px;
+        padding: 5px;
+        margin: 10px auto;
+        text-align: center;
+        font-weight: bold;
+        padding: 20px;
+        border: 1px solid #005478;
+        background-color: #BFECFF;
+}
+a img {
+	padding-left: 5px;
+}
+li {
+	list-style-type: none;
+}
+ul {
+	padding-left: 0px;
+}

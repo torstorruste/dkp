@@ -1,0 +1,60 @@
+.Poor {
+	color: #9d9d9d;
+}
+.Common {
+	color: #fff;
+}
+.Uncommon {
+	color: #1eff00;
+}
+.Rare {
+	color: #0077dd;
+}
+.Epic {
+	color: #912fd1;
+	
+}
+.Legendary {
+	color: #FF8C00;
+}
+.Deathknight {
+	color: #ae2048;
+	font-weight: bold;
+}
+.Druid {
+	color: #ff7d0a ;
+	font-weight: bold;
+}
+.Hunter {
+	color: #96b964;
+	font-weight: bold;
+}
+.Mage {
+	color: #5fb4d3;
+	font-weight: bold;
+}
+.Paladin {
+	color: #f58cba;
+	font-weight: bold;
+}
+.Priest {
+	color: #a1a1a1;
+	font-weight: bold;
+}
+.Rogue {
+	color: #eadd1c;
+	font-weight: bold;
+}
+.Shaman {
+	color: #00dbba;
+	font-weight: bold;
+}
+
+.Warrior {
+	color: #ba9267;
+	font-weight: bold;
+}
+.Warlock {
+	color: #8373b0;
+	font-weight: bold;
+}
