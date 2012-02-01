@@ -23,7 +23,7 @@ class RaidDao extends GenericDao{
 				throw new Exception("Could not add the raid");
 			}
 			$query = mysql_query("SELECT MAX(rid) rid FROM wow_raid");
-			$result = mysql_fetch_assoc($query)
+			$result = mysql_fetch_assoc($query);
 			return $result['rid'];
 		} else {
 			throw new Exception("Could not authenticate you");

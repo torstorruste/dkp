@@ -27,6 +27,7 @@ if(isset($_POST['addraid'])) {
 	if(validateNewRaid()) {
 		include_once("../dao/genericDao.php");	
 		include_once("../dao/raidDao.php");
+		include_once("../dao/playerDao.php");
 		$raidDao = new RaidDao();
 		$playerDao = new PlayerDao();
 	
