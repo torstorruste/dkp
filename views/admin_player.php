@@ -2,7 +2,7 @@
 // Check if a user is logged in
 include("check_admin.php");
 
-$classes = array('Deathknight','Druid','Hunter','Mage','Paladin','Priest','Shaman','Rogue','Warlock','Warrior');
+$classes = array('Deathknight','Druid','Hunter','Mage','Monk','Paladin','Priest','Shaman','Rogue','Warlock','Warrior');
 $roles = array('Healer', 'Melee', 'Ranged', 'Tank');
 ?>
 <div id="widest" class="frame">
