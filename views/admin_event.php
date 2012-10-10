@@ -143,7 +143,7 @@ if(empty($_GET['id'])) {
 		echo "<table class=\"sortable\">\n<thead>\n<tr><th>Name:</th><th>EP:</th><th>GP:</th><th>QP<th>Priority</th><th>Changed<br/>EP</th><th>Changed<br/>GP</th></tr>\n</thead>\n<tbody>\n";
 		try {
 			$playersInRaid = $raid->getPlayers();
-			$classes = array('Deathknight','Druid','Hunter','Mage','Paladin','Priest','Shaman','Rogue','Warlock','Warrior');
+			$classes = array('Deathknight','Druid','Hunter','Mage','Monk','Paladin','Priest','Shaman','Rogue','Warlock','Warrior');
 			foreach($classes as $class)
 			{
 				foreach($playersInRaid as $raider) {
