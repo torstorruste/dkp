@@ -672,4 +672,11 @@ class RaidDao extends GenericDao{
 		
 		return $decayRate;
 	}
+
+	function moveEvent($eid, $time) {
+		$query = mysql_query("UPDATE wow_event set time='$time' where eid=$eid");
+		if(mysql_error()) {
+			throw new Exception("Unable to move event ". mysql_error());
+		}
+	}
 }

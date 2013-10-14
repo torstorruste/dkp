@@ -25,6 +25,10 @@ class event {
 	function getType() {
 		return $this->type;
 	}
+
+	function getTimeAdded() {
+		return $this->timeAdded;
+	}
 	
 	function getTime() {
 		$hms = split(" ",$this->timeAdded);
