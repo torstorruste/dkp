@@ -200,8 +200,10 @@ if(empty($_GET['id'])) {
 				echo "<tr><td>".$event->getTime()."</td><td><input type=\"checkbox\" value=\"".$event->getId()."\" name=\"events[]\"></td><td>".$event->getResponsible()->getFormattedName()."</td><td>".$event->getOverview()."</td></tr>\n";
 			}
 			echo "</tbody>\n</table>\n";
-			if($raid->getStatus() != 'Finished')
+			if($raid->getStatus() != 'Finished') {
 				echo "<input type=\"hidden\" value=\"$_GET[id]\" name=\"id\"><input type=\"submit\" value=\"Delete events\" name=\"deleteevents\">";
+				echo "<a href=\"?page=move_event&id=$_GET[id]\">Move events</a>";
+				}
 			echo "</form>\n";
 		} catch(Exception $e) {
 			echo $e->getMessage();
