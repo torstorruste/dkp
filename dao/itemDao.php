@@ -1,5 +1,7 @@
 <?php
 class ItemDao extends GenericDao {
+	var $prefix = 'alt';
+
 	function addItem($id, $hid, $name, $quality, $instance) {
 		mysql_query("INSERT INTO wow_item (iid, hid, name, quality, instance) VALUES ($id, $hid, '$name', '$quality', $instance)");
 		if(mysql_error()) {
@@ -51,7 +53,7 @@ class ItemDao extends GenericDao {
 	
 	function getItemsAndPlayers($itemname = "") {
 		$itemname = mysql_escape_string($itemname);
-		$query = mysql_query("SELECT * FROM wow_player JOIN wow_event USING (pid) JOIN wow_item USING (iid) WHERE name LIKE '%$itemname%' ORDER BY name, class, playername");
+		$query = mysql_query("SELECT * FROM ".$this->prefix."_player JOIN ".$this->prefix."_event USING (pid) JOIN wow_item USING (iid) WHERE name LIKE '%$itemname%' ORDER BY name, class, playername");
 		if(mysql_num_rows($query)==0)
 			throw new Exception("No items found. You searched for '$itemname'");
 		include_once("models/item.php");

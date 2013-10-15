@@ -2,6 +2,7 @@
 class GenericDao {
 
 	var $link;
+	var $prefix = 'alt';
 
 	function __construct() {
 			if(is_file("dao/dbinfo.php"))
@@ -13,7 +14,7 @@ class GenericDao {
 	/* Functions that handles login and user management */
 
 	function login($name, $password, $remember) {
-		$query = mysql_query("SELECT * FROM wow_player WHERE username='$name' AND password='".sha1($password)."' and active=1");
+		$query = mysql_query("SELECT * FROM ".$this->prefix."_player WHERE username='$name' AND password='".sha1($password)."' and active=1");
 		if(mysql_num_rows($query)==0) {
 			return false;
 		} else {
@@ -39,7 +40,7 @@ class GenericDao {
 	}
 
 	function checkSession($session) {
-		$query = mysql_query("SELECT rights FROM wow_player WHERE SHA1(CONCAT(username, sha1(password)))='$session'");
+		$query = mysql_query("SELECT rights FROM ".$this->prefix."_player WHERE SHA1(CONCAT(username, sha1(password)))='$session'");
 		if(mysql_num_rows($query)==0)
 			return false;
 		$result = mysql_fetch_assoc($query);
@@ -51,14 +52,14 @@ class GenericDao {
 	}
 	
 	function clearStats() {
-		mysql_query("DELETE FROM wow_stats");
+		mysql_query("DELETE FROM ".$this->prefix."_stats");
 		if(mysql_error())
 			throw new Exception("Could not connect to the database");
 	}
 	
 	function verifyIdentity() {
 		// Find who is logged in
-		$query = mysql_query("SELECT * FROM wow_player WHERE SHA1(CONCAT(username, sha1(password))) = '$_SESSION[dkp]'");
+		$query = mysql_query("SELECT * FROM ".$this->prefix."_player WHERE SHA1(CONCAT(username, sha1(password))) = '$_SESSION[dkp]'");
 		if(mysql_num_rows($query)==1) {
 			$result = mysql_fetch_assoc($query);
 			return $result['pid'];

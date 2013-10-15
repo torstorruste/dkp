@@ -1,5 +1,7 @@
 <?php
 class InstanceDao extends GenericDao{
+	var $prefix = 'alt';
+
 	function addInstance($name, $multiplier) {
 		mysql_query("INSERT INTO wow_instance (name, multiplier) VALUES ('$name', $multiplier)");
 		if(mysql_error()) {
@@ -49,7 +51,7 @@ class InstanceDao extends GenericDao{
 	}
 	
 	function getRecentInstances() {
-		$query = mysql_query("SELECT distinct inid, name, multiplier FROM wow_raid LEFT JOIN wow_instance USING (inid) WHERE start> now() - INTERVAL 14 DAY AND status='Finished'");
+		$query = mysql_query("SELECT distinct inid, name, multiplier FROM ".$this->prefix."_raid LEFT JOIN wow_instance USING (inid) WHERE start> now() - INTERVAL 14 DAY AND status='Finished'");
 		if(mysql_num_rows($query)==0)
 			throw new Exception("Could not find any raids");
 
