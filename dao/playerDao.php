@@ -1,15 +1,16 @@
 <?php
 class PlayerDao extends GenericDao{
+	var $prefix = 'alt';
 
 	function addPlayer($player) {
-		mysql_query("INSERT INTO $prefix_player (playername, class, role, username, password, rights, active) VALUES ('".$player->getName()."', '".$player->getClass()."', '".$player->getRole()."', '".$player->getName()."', sha1('".$player->getName()."'), 'Raider', true)");
+		mysql_query("INSERT INTO ".$this->prefix."_player (playername, class, role, username, password, rights, active) VALUES ('".$player->getName()."', '".$player->getClass()."', '".$player->getRole()."', '".$player->getName()."', sha1('".$player->getName()."'), 'Raider', true)");
 		if(mysql_error()) {
 			throw new Exception("Could not add the player");
 		}
 	}
 	
 	function editPlayer($player) {
-		mysql_query("UPDATE $prefix_player SET playername='".$player->getName()."', username='".$player->getUsername()."', class='".$player->getClass()."', rights='".$player->getRights()."', role='".$player->getRole()."', active=".($player->isActive()?1:0)." WHERE pid=".$player->getID());
+		mysql_query("UPDATE ".$this->prefix."_player SET playername='".$player->getName()."', username='".$player->getUsername()."', class='".$player->getClass()."', rights='".$player->getRights()."', role='".$player->getRole()."', active=".($player->isActive()?1:0)." WHERE pid=".$player->getID());
 		if(mysql_error()) {
 			throw new Exception("Could not edit the player");
 		}
@@ -18,18 +19,18 @@ class PlayerDao extends GenericDao{
 	function savePlayer($player) {
 		if(!is_a($player, 'Player'))
 			throw new Exception("Cannot save a non-player object");
-		mysql_query("UPDATE $prefix_player SET playername='".$player->getName()."', username='".$player->getUsername()."', class='".$player->getClass()."', rights='".$player->getRights()."', role='".$player->getRole()."' active=".$player->isActive()." WHERE pid=".$player->getID());
+		mysql_query("UPDATE ".$this->prefix."_player SET playername='".$player->getName()."', username='".$player->getUsername()."', class='".$player->getClass()."', rights='".$player->getRights()."', role='".$player->getRole()."' active=".$player->isActive()." WHERE pid=".$player->getID());
 	}
 
 	// Also save QP	
 	function saveEPGP($player) {
 		if(!is_a($player, 'Player'))
 			throw new Exception("Cannot save the EPGP of a non-player object");
-		mysql_query("UPDATE $prefix_player SET ep=".$player->getEP().", gp=".$player->getGP().", qp=".$player->getQP()." WHERE pid=".$player->getId());
+		mysql_query("UPDATE ".$this->prefix."_player SET ep=".$player->getEP().", gp=".$player->getGP().", qp=".$player->getQP()." WHERE pid=".$player->getId());
 	}
 	
 	function removePlayer($pid) {
-		mysql_query("DELETE FROM $prefix_player WHERE pid=$pid");
+		mysql_query("DELETE FROM ".$this->prefix."_player WHERE pid=$pid");
 		if(mysql_error()) {
 			throw new Exception("Could not delete the player");
 		}
@@ -43,7 +44,7 @@ class PlayerDao extends GenericDao{
 	}
 
 	function getUsers($where = " ORDER BY playername ASC") {
-		$query = mysql_query("SELECT * FROM $prefix_player $where");
+		$query = mysql_query("SELECT * FROM ".$this->prefix."_player $where");
 		if(mysql_error())
 			throw new Exception(mysql_error());
 		if(mysql_num_rows($query)==0)
@@ -71,11 +72,11 @@ class PlayerDao extends GenericDao{
 	}
 	
 	function changePassword($oldpass, $newpass) {
-		$query = mysql_query("SELECT * FROM $prefix_player WHERE SHA1(CONCAT(username, SHA1(password))) = '$_SESSION[dkp]' AND password=SHA1('$oldpass')");
+		$query = mysql_query("SELECT * FROM ".$this->prefix."_player WHERE SHA1(CONCAT(username, SHA1(password))) = '$_SESSION[dkp]' AND password=SHA1('$oldpass')");
 		if(mysql_num_rows($query)!= 1) {
 			throw new Exception("Old password did not match");
 		}
-		mysql_query("UPDATE $prefix_player SET password=SHA1('$newpass') WHERE SHA1(CONCAT(username, SHA1(password))) = '$_SESSION[dkp]'");
+		mysql_query("UPDATE ".$this->prefix."_player SET password=SHA1('$newpass') WHERE SHA1(CONCAT(username, SHA1(password))) = '$_SESSION[dkp]'");
 		if(mysql_error()) {
 			throw new Exception("Unable to update the password");
 		}
@@ -91,7 +92,7 @@ class PlayerDao extends GenericDao{
 	function getItemEvents($player, $order="name") {	
 		if(!is_a($player, 'Player'))
 			throw new Exception("Not a player object");
-		$query = mysql_query("SELECT * FROM wow_item,  $prefix_event WHERE (wow_item.iid=$prefix_event.iid or wow_item.hid=$prefix_event.iid) and pid=".$player->getID()." ORDER BY $order");
+		$query = mysql_query("SELECT * FROM wow_item,  ".$this->prefix."_event WHERE (wow_item.iid=".$this->prefix."_event.iid or wow_item.hid=".$this->prefix."_event.iid) and pid=".$player->getID()." ORDER BY $order");
 		if(mysql_num_rows($query)==0) {
 			throw new Exception("No items found");
 		}
@@ -110,7 +111,7 @@ class PlayerDao extends GenericDao{
 	function updateActivity($player, $activity) {		
 		if(!is_a($player, 'Player'))
 			throw new Exception("Not a player object");
-		mysql_query("UPDATE $prefix_player SET activity=$activity WHERE pid=".$player->getID());
+		mysql_query("UPDATE ".$this->prefix."_player SET activity=$activity WHERE pid=".$player->getID());
 		if(mysql_error()) {
 			throw new Exception("Could not update the activity");
 		}
@@ -119,8 +120,8 @@ class PlayerDao extends GenericDao{
 	function updateStats($player, $instance, $activity, $queue) {
 		if(!is_a($player, 'Player'))
 			throw new Exception("Not a player object");
-		mysql_query("INSERT INTO $prefix_stats (pid, inid, type, value) VALUES (".$player->getID().", ".$instance.", 'activity', ".$activity.")");
-		mysql_query("INSERT INTO $prefix_stats (pid, inid, type, value) VALUES (".$player->getId().", ".$instance.", 'queue', ".$queue.")");
+		mysql_query("INSERT INTO ".$this->prefix."_stats (pid, inid, type, value) VALUES (".$player->getID().", ".$instance.", 'activity', ".$activity.")");
+		mysql_query("INSERT INTO ".$this->prefix."_stats (pid, inid, type, value) VALUES (".$player->getId().", ".$instance.", 'queue', ".$queue.")");
 		if(mysql_error())
 			throw new Exception("Could not update the stats");
 	}
@@ -128,7 +129,7 @@ class PlayerDao extends GenericDao{
 	function getRecentRaids($player) {
 		if(!is_a($player, 'Player'))
 			throw new Exception("Not a player object");
-		$query = mysql_query("SELECT * FROM $prefix_raid LEFT JOIN wow_instance USING (inid) JOIN $prefix_event USING (rid) WHERE status='Finished' AND Type='Add' AND pid=".$player->getId()." ORDER BY start DESC LIMIT 10");
+		$query = mysql_query("SELECT * FROM ".$this->prefix."_raid LEFT JOIN wow_instance USING (inid) JOIN ".$this->prefix."_event USING (rid) WHERE status='Finished' AND Type='Add' AND pid=".$player->getId()." ORDER BY start DESC LIMIT 10");
 		if(mysql_num_rows($query)==0) 
 			throw new Exception("No raids found");
 		
