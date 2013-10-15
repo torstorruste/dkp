@@ -3,7 +3,7 @@ class RaidDao extends GenericDao{
 	
 	function addRaid($instance, $start, $status) {
 		// Find who is logged in
-		$query = mysql_query("SELECT * FROM wow_player WHERE SHA1(CONCAT(username, SHA1(password))) = '$_SESSION[dkp]'");
+		$query = mysql_query("SELECT * FROM $prefix_player WHERE SHA1(CONCAT(username, SHA1(password))) = '$_SESSION[dkp]'");
 		//$this->verifyIdentity();
 		// TODO: Use verifyIdentity instead
 		if(mysql_num_rows($query)==1) {
@@ -17,12 +17,12 @@ class RaidDao extends GenericDao{
 			if($start != 'now()')
 				$start = "'".$start."'";
 
-			mysql_query("INSERT INTO wow_raid (start, inid, status, leader) VALUES ($start, $instance, '$status', $leader)");
+			mysql_query("INSERT INTO $prefix_raid (start, inid, status, leader) VALUES ($start, $instance, '$status', $leader)");
 			
 			if(mysql_error()) {
 				throw new Exception("Could not add the raid");
 			}
-			$query = mysql_query("SELECT MAX(rid) rid FROM wow_raid");
+			$query = mysql_query("SELECT MAX(rid) rid FROM $prefix_raid");
 			$result = mysql_fetch_assoc($query);
 			return $result['rid'];
 		} else {
@@ -31,11 +31,11 @@ class RaidDao extends GenericDao{
 	}
 
 	function deleteRaid($rid) {
-		$query = mysql_query("SELECT * FROM wow_event WHERE rid=$rid");
+		$query = mysql_query("SELECT * FROM $prefix_event WHERE rid=$rid");
 		if(mysql_num_rows($query)>0)
 			throw new Exception("Cannot delete a raid with attached events");
 
-		mysql_query("DELETE FROM wow_raid WHERE rid=$rid");
+		mysql_query("DELETE FROM $prefix_raid WHERE rid=$rid");
 		if(mysql_error())
 			throw new Exception("Could not delete the raid");
 	}
@@ -49,12 +49,12 @@ class RaidDao extends GenericDao{
 		$playerDao = new PlayerDao();
 		
 		if($raid->getStatus()=='Planned')
-			return $playerDao->getUsers("JOIN wow_event AS e USING (pid) WHERE rid=".$raid->getId()." AND type = 'Signup' AND time >= (SELECT MAX(time) FROM wow_event WHERE rid=e.rid and pid=e.pid AND (type='unsign' OR type='signup'));");
+			return $playerDao->getUsers("JOIN $prefix_event AS e USING (pid) WHERE rid=".$raid->getId()." AND type = 'Signup' AND time >= (SELECT MAX(time) FROM $prefix_event WHERE rid=e.rid and pid=e.pid AND (type='unsign' OR type='signup'));");
 		else {
 			if($sort=='class')
-				return $playerDao->getUsers("JOIN wow_event USING (pid) WHERE type='Add' AND wow_event.rid=".$raid->getId()." ORDER BY class, playername ASC");
+				return $playerDao->getUsers("JOIN $prefix_event USING (pid) WHERE type='Add' AND $prefix_event.rid=".$raid->getId()." ORDER BY class, playername ASC");
 			else
-				return $playerDao->getUsers("JOIN wow_event USING (pid) WHERE type='Add' AND wow_event.rid=".$raid->getId()." ORDER BY $sort ASC");
+				return $playerDao->getUsers("JOIN $prefix_event USING (pid) WHERE type='Add' AND $prefix_event.rid=".$raid->getId()." ORDER BY $sort ASC");
 		}
 	}
 	
@@ -63,7 +63,7 @@ class RaidDao extends GenericDao{
 			$limit = "";
 		else
 			$limit = " LIMIT $number";
-		$query = mysql_query("SELECT * FROM wow_raid LEFT JOIN wow_instance USING (inid) WHERE status='$status' ORDER BY start DESC $limit");
+		$query = mysql_query("SELECT * FROM $prefix_raid LEFT JOIN $prefix_instance USING (inid) WHERE status='$status' ORDER BY start DESC $limit");
 		if(mysql_num_rows($query)==0)
 			throw new Exception("No raids found");
 
@@ -78,7 +78,7 @@ class RaidDao extends GenericDao{
 		if(empty($rid) || ereg("[^0-9]", $rid))
 			throw new Exception('Invalid id');
 
-		$query = mysql_query("SELECT * FROM wow_raid LEFT JOIN wow_instance USING (inid) WHERE rid=$rid");
+		$query = mysql_query("SELECT * FROM $prefix_raid LEFT JOIN wow_instance USING (inid) WHERE rid=$rid");
 		if(mysql_num_rows($query)==0)
 			throw new Exception("Could not find a raid with that id");
 
@@ -102,7 +102,7 @@ class RaidDao extends GenericDao{
 	}
 	
 	function getRecentRaids($interval = 14) {
-		$query = mysql_query("SELECT * FROM wow_raid LEFT JOIN wow_instance USING (inid) WHERE start> now() - INTERVAL $interval DAY AND status='Finished'");
+		$query = mysql_query("SELECT * FROM $prefix_raid LEFT JOIN wow_instance USING (inid) WHERE start> now() - INTERVAL $interval DAY AND status='Finished'");
 		if(mysql_num_rows($query)==0)
 			throw new Exception("Could not find any raids");
 
@@ -116,7 +116,7 @@ class RaidDao extends GenericDao{
 	}
 	
 	function getRecentRaidsToInstance($inid) {
-		$query = mysql_query("SELECT * FROM wow_raid LEFT JOIN wow_instance USING (inid) WHERE start> now() - INTERVAL 14 DAY AND status='Finished' AND inid=$inid");
+		$query = mysql_query("SELECT * FROM $prefix_raid LEFT JOIN wow_instance USING (inid) WHERE start> now() - INTERVAL 14 DAY AND status='Finished' AND inid=$inid");
 		if(mysql_num_rows($query)==0)
 			throw new Exception($query);
 //			throw new Exception("Could not find any raids");
@@ -134,7 +134,7 @@ class RaidDao extends GenericDao{
 		// If the target is undetermined:
 		if($instance=="")
 			$instance = 0;
-		mysql_query("UPDATE wow_raid SET inid=$instance WHERE rid=$id");
+		mysql_query("UPDATE $prefix_raid SET inid=$instance WHERE rid=$id");
 		if(mysql_error()) {
 			throw new Exception("Cannot update the raid");
 		}
@@ -142,7 +142,7 @@ class RaidDao extends GenericDao{
 
 	function editStart($rid, $start) {
 		// If the target is undetermined:
-		mysql_query("UPDATE wow_raid SET start='$start' WHERE rid=$rid");
+		mysql_query("UPDATE $prefix_raid SET start='$start' WHERE rid=$rid");
 		if(mysql_error()) {
 			throw new Exception("Cannot update the raid");
 		}
@@ -152,20 +152,20 @@ class RaidDao extends GenericDao{
 		// Find who is logged in
 		$leader = $this->verifyIdentity();
 		
-		$query = mysql_query("SELECT * FROM wow_raid WHERE rid=$rid AND status='Planned'");
+		$query = mysql_query("SELECT * FROM $prefix_raid WHERE rid=$rid AND status='Planned'");
 		if(mysql_num_rows($query)==0)
 			throw new Exception("Cannot start the same raid twice");
 
 		// Add all the players that signed up to the raid
-		$query = mysql_query("SELECT * FROM wow_event AS e WHERE rid=$rid AND type = 'Signup' AND time >= (SELECT MAX(time) FROM wow_event WHERE rid=$rid and pid=e.pid AND (type='unsign' OR type='signup'));");
+		$query = mysql_query("SELECT * FROM $prefix_event AS e WHERE rid=$rid AND type = 'Signup' AND time >= (SELECT MAX(time) FROM $prefix_event WHERE rid=$rid and pid=e.pid AND (type='unsign' OR type='signup'));");
 		while($result = mysql_fetch_assoc($query)) {
-			mysql_query("INSERT INTO wow_event (type, rid, pid, time, responsible) VALUES ('Add', $rid, $result[pid], now(), $leader)");
+			mysql_query("INSERT INTO $prefix_event (type, rid, pid, time, responsible) VALUES ('Add', $rid, $result[pid], now(), $leader)");
 			if(mysql_error())
 				throw new Exception("Could not the add player to the raid");
 		}
 
 		// Change the status of the raid to 'Active'
-		mysql_query("UPDATE wow_raid SET status='Active' WHERE rid=$rid");
+		mysql_query("UPDATE $prefix_raid SET status='Active' WHERE rid=$rid");
 		if(mysql_error()) {
 			throw new Exception('Could not start the raid');
 		}
@@ -176,15 +176,15 @@ class RaidDao extends GenericDao{
 		$leader = $this->verifyIdentity();
 
 		// If the raid is planned, "signup the player"
-		$query = mysql_query("SELECT status FROM wow_raid WHERE rid=$rid");
+		$query = mysql_query("SELECT status FROM $prefix_raid WHERE rid=$rid");
 		if(mysql_num_rows($query)==0)
 			throw new Exception("Raid not found");
 		$result = mysql_fetch_assoc($query);
 
 		if($result['status'] == 'Active')
-			mysql_query("INSERT INTO wow_event (type, rid, pid, time, responsible) VALUES ('Add', $rid, $pid, now(), $leader)");
+			mysql_query("INSERT INTO $prefix_event (type, rid, pid, time, responsible) VALUES ('Add', $rid, $pid, now(), $leader)");
 		elseif($result['status']=='Planned')
-			mysql_query("INSERT INTO wow_event (type, rid, pid, time, responsible) VALUES ('Signup', $rid, $pid, now(), $leader)");
+			mysql_query("INSERT INTO $prefix_event (type, rid, pid, time, responsible) VALUES ('Signup', $rid, $pid, now(), $leader)");
 		else
 			throw new Exception("Cannot modify a finished raid");
 
@@ -194,7 +194,7 @@ class RaidDao extends GenericDao{
 	}
 
 	function deleteEvent($rid, $eid) {
-		mysql_query("DELETE FROM wow_event WHERE rid=$rid AND eid=$eid");
+		mysql_query("DELETE FROM $prefix_event WHERE rid=$rid AND eid=$eid");
 		if(mysql_error()) {
 			throw new Exception("Could not delete events");
 		}
@@ -203,7 +203,7 @@ class RaidDao extends GenericDao{
 	function changeStatus($rid, $pid, $type) {
 		// Find who is logged in
 		$responsible = $this->verifyIdentity();
-		mysql_query("INSERT INTO wow_event (type, rid, pid, time, responsible) VALUES ('$type', $rid, $pid, now(), $responsible)");
+		mysql_query("INSERT INTO $prefix_event (type, rid, pid, time, responsible) VALUES ('$type', $rid, $pid, now(), $responsible)");
 		if(mysql_error()) {
 			throw new Exception("Could not add the event");
 		}
@@ -211,7 +211,7 @@ class RaidDao extends GenericDao{
 
 	function checkStatus($rid, $pid, $type) {
 		if($type == 'AFK') {
-			$query = mysql_query("SELECT type FROM wow_event WHERE pid=$pid AND rid=$rid AND (type='AFK' OR type='ReturnAfk') ORDER BY TIME DESC LIMIT 1");
+			$query = mysql_query("SELECT type FROM $prefix_event WHERE pid=$pid AND rid=$rid AND (type='AFK' OR type='ReturnAfk') ORDER BY TIME DESC LIMIT 1");
 			if(mysql_num_rows($query)==0)
 				return false;
 			$result = mysql_fetch_assoc($query);
@@ -220,7 +220,7 @@ class RaidDao extends GenericDao{
 			return false;
 		}
 		if($type == 'Queue') {
-			$query = mysql_query("SELECT type FROM wow_event WHERE pid=$pid AND rid=$rid AND (type='Queue' OR type='ReturnQueue') ORDER BY TIME DESC LIMIT 1");
+			$query = mysql_query("SELECT type FROM $prefix_event WHERE pid=$pid AND rid=$rid AND (type='Queue' OR type='ReturnQueue') ORDER BY TIME DESC LIMIT 1");
 			if(mysql_num_rows($query)==0)
 				return false;
 			$result = mysql_fetch_assoc($query);
@@ -231,19 +231,19 @@ class RaidDao extends GenericDao{
 	}
 
 	function addStartPoint($rid) {
-		$query = mysql_query("SELECT * FROM wow_event WHERE rid=$rid AND type='Start'");
+		$query = mysql_query("SELECT * FROM $prefix_event WHERE rid=$rid AND type='Start'");
 		if(mysql_num_rows($query)>0) {
 			throw new Exception("Start point already added");
 		}
 		$responsible = $this->verifyIdentity();
-		mysql_query("INSERT INTO wow_event (rid, type, time, amount, responsible) VALUES ($rid, 'Start', now(), 10, $responsible)");
+		mysql_query("INSERT INTO $prefix_event (rid, type, time, amount, responsible) VALUES ($rid, 'Start', now(), 10, $responsible)");
 		if(mysql_error()) {
 			throw new Exception("Could not add a start point at this time");
 		}
 	}
 	function addHourPoint($rid, $amount) {
 		$responsible = $this->verifyIdentity();
-		mysql_query("INSERT INTO wow_event (rid, type, time, amount, responsible) VALUES ($rid, 'Hour', now(), $amount, $responsible)");
+		mysql_query("INSERT INTO $prefix_event (rid, type, time, amount, responsible) VALUES ($rid, 'Hour', now(), $amount, $responsible)");
 		if(mysql_error()) {
 			throw new Exception("Cannot add hour points now");
 		}
@@ -251,16 +251,16 @@ class RaidDao extends GenericDao{
 
 	function buyItem($rid, $pid, $iid, $offspec) {
 		$responsible = $this->verifyIdentity();
-		mysql_query("INSERT INTO wow_event (rid, type, time, pid, iid, comment, responsible) VALUES ($rid, 'Buy', now(), $pid, $iid, '$offspec', $responsible)");
+		mysql_query("INSERT INTO $prefix_event (rid, type, time, pid, iid, comment, responsible) VALUES ($rid, 'Buy', now(), $pid, $iid, '$offspec', $responsible)");
 		if(mysql_error()) {
-			throw new Exception("INSERT INTO wow_event (rid, type, time, pid, iid, comment, responsible) VALUES ($rid, 'Buy', now(), $pid, $iid, '$offspec', $responsible) ".mysql_error());
+			throw new Exception("INSERT INTO $prefix_event (rid, type, time, pid, iid, comment, responsible) VALUES ($rid, 'Buy', now(), $pid, $iid, '$offspec', $responsible) ".mysql_error());
 //			throw new Exception("Cannot sell items now");
 		}
 	}
 
 	function addBonus($rid, $pid, $bonus, $comment) {
 		$responsible = $this->verifyIdentity();
-		mysql_query("INSERT INTO wow_event (rid, type, amount, comment, time, pid, responsible) VALUES ($rid, 'Bonus', $bonus, '$comment', now(), $pid, $responsible)");
+		mysql_query("INSERT INTO $prefix_event (rid, type, amount, comment, time, pid, responsible) VALUES ($rid, 'Bonus', $bonus, '$comment', now(), $pid, $responsible)");
 		if(mysql_error()) {
 			throw new Exception("Could not add the bonus");
 		}
@@ -274,7 +274,7 @@ class RaidDao extends GenericDao{
 		$raid = $this->getRaid($rid);
 
 		// Update the status of the raid
-		mysql_query("UPDATE wow_raid SET decay=$decay, status='Finished' WHERE rid=$rid");
+		mysql_query("UPDATE $prefix_raid SET decay=$decay, status='Finished' WHERE rid=$rid");
 
 		// Get the decay-factor
 		$factor = $this->getDecayFactor($raid);
@@ -297,7 +297,7 @@ class RaidDao extends GenericDao{
 		}
 
 		// Finish the raid
-		mysql_query("INSERT INTO wow_event (type, rid, time, responsible) VALUES ('Finish', $rid, now(), $leader)");
+		mysql_query("INSERT INTO $prefix_event (type, rid, time, responsible) VALUES ('Finish', $rid, now(), $leader)");
 		if(mysql_error()) {
 			throw new Exception('Could not end the raid');
 		}
@@ -311,7 +311,7 @@ class RaidDao extends GenericDao{
 		$raid = $this->getRaid($rid);
 
 		// Update the status of the raid
-		mysql_query("UPDATE wow_raid SET status='Active' WHERE rid=$rid");
+		mysql_query("UPDATE $prefix_raid SET status='Active' WHERE rid=$rid");
 
 		// Get the decay-factor
 		$factor = $this->getDecayFactor($raid);
@@ -335,7 +335,7 @@ class RaidDao extends GenericDao{
 		}
 
 		// Remove the finish-event
-		mysql_query("DELETE FROM wow_event WHERE type= 'Finish' and rid='$rid'");
+		mysql_query("DELETE FROM $prefix_event WHERE type= 'Finish' and rid='$rid'");
 
 		if(mysql_error()) {
 			throw new Exception('Could not end the raid');
@@ -368,7 +368,7 @@ class RaidDao extends GenericDao{
 			}
 		}
 
-		mysql_query("INSERT INTO wow_event (type, rid, pid, time, comment, responsible) VALUES ('Signup', $rid, $pid, now(), $comment, $pid)");
+		mysql_query("INSERT INTO $prefix_event (type, rid, pid, time, comment, responsible) VALUES ('Signup', $rid, $pid, now(), $comment, $pid)");
 		if(mysql_error()) {
 			throw new Exception("Could not sign up now");
 		}
@@ -400,7 +400,7 @@ class RaidDao extends GenericDao{
 			}
 		}
 
-		mysql_query("INSERT INTO wow_event (type, rid, pid, time, comment, responsible) VALUES ('Unsign', $rid, $pid, now(), $comment, $pid)");
+		mysql_query("INSERT INTO $prefix_event (type, rid, pid, time, comment, responsible) VALUES ('Unsign', $rid, $pid, now(), $comment, $pid)");
 		if(mysql_error()) {
 			throw new Exception("Could not unsign now");
 		}
@@ -411,11 +411,11 @@ class RaidDao extends GenericDao{
 			throw new Exception("Not a raid");
 		
 		if($raid->getStatus() == 'Planned')
-			$query = mysql_query("SELECT * FROM wow_event WHERE rid=".$raid->getId()." ORDER BY time ASC");
+			$query = mysql_query("SELECT * FROM $prefix_event WHERE rid=".$raid->getId()." ORDER BY time ASC");
 		elseif(isset($_SESSION['admin']))
-			$query = mysql_query("SELECT * FROM wow_event WHERE rid=".$raid->getId()." AND ((type <> 'Signup' AND type <> 'Unsign') OR (comment IS NOT NULL AND comment <> '')) ORDER BY time ASC");
+			$query = mysql_query("SELECT * FROM $prefix_event WHERE rid=".$raid->getId()." AND ((type <> 'Signup' AND type <> 'Unsign') OR (comment IS NOT NULL AND comment <> '')) ORDER BY time ASC");
 		else 
-			$query = mysql_query("SELECT * FROM wow_event WHERE rid=".$raid->getId()." AND type <> 'Signup' AND type <> 'Unsign' AND type <> 'Queue' AND type <> 'ReturnQueue' ORDER BY time ASC");
+			$query = mysql_query("SELECT * FROM $prefix_event WHERE rid=".$raid->getId()." AND type <> 'Signup' AND type <> 'Unsign' AND type <> 'Queue' AND type <> 'ReturnQueue' ORDER BY time ASC");
 		if(mysql_num_rows($query)==0)
 			throw new Exception("No events found");
 		
@@ -447,15 +447,15 @@ class RaidDao extends GenericDao{
 		if(!$inRaid)
 			return 0;
 		
-		$query = mysql_query("SELECT * FROM wow_event WHERE pid=$player and type='AFK' and rid=".$raid->getId());
+		$query = mysql_query("SELECT * FROM $prefix_event WHERE pid=$player and type='AFK' and rid=".$raid->getId());
 	
 		$sum = 0;
 		// If player hasn't gone afk:
 		if(mysql_num_rows($query)==0) {
 			// Get all events for the entire raid after the player joined
-			$add_query = mysql_query("SELECT time FROM wow_event WHERE type='Add' AND rid=".$raid->getId()." AND pid=$player");
+			$add_query = mysql_query("SELECT time FROM $prefix_event WHERE type='Add' AND rid=".$raid->getId()." AND pid=$player");
 			$add_result = mysql_fetch_assoc($add_query);
-			$query = "SELECT sum(amount) as sum FROM wow_event WHERE time>'$add_result[time]' AND pid IS NULL AND rid=".$raid->getId();
+			$query = "SELECT sum(amount) as sum FROM $prefix_event WHERE time>'$add_result[time]' AND pid IS NULL AND rid=".$raid->getId();
 			if(!$includeBonuses)
 				$query .= " AND type='Hour'";
 			$raid_event_query = mysql_query($query);
@@ -464,12 +464,12 @@ class RaidDao extends GenericDao{
 			
 		} else {
 			// If player has gone AFK - Get the times the player went AFK, and check whether he returned
-			$timeline_query = mysql_query("SELECT time, type FROM wow_event WHERE pid=$player AND rid='".$raid->getId()."' AND (type='AFK' OR type='ReturnAFK' OR type='Add') ORDER BY time ASC");
+			$timeline_query = mysql_query("SELECT time, type FROM $prefix_event WHERE pid=$player AND rid='".$raid->getId()."' AND (type='AFK' OR type='ReturnAFK' OR type='Add') ORDER BY time ASC");
 			
 			while($timeline_result = mysql_fetch_assoc($timeline_query)) {
 				$timeline[] = $timeline_result['time'];
 			}
-			$query = "SELECT sum(amount) AS sum FROM wow_event WHERE rid=".$raid->getId()." AND pid IS NULL AND (";
+			$query = "SELECT sum(amount) AS sum FROM $prefix_event WHERE rid=".$raid->getId()." AND pid IS NULL AND (";
 			// Takes into account everything but eventually the last return
 			for($i=0;$i<floor(count($timeline)/2);$i++) {
 				if($i>0)
@@ -496,7 +496,7 @@ class RaidDao extends GenericDao{
 		
 		// Add the bonuses we've received
 		if($includeBonuses) {
-			$query = mysql_query("SELECT sum(amount) as sum FROM wow_event WHERE rid=".$raid->getId()." AND pid=$player AND TYPE='Bonus'");
+			$query = mysql_query("SELECT sum(amount) as sum FROM $prefix_event WHERE rid=".$raid->getId()." AND pid=$player AND TYPE='Bonus'");
 			$result = mysql_fetch_assoc($query);
 			
 			return $sum + $result['sum'];
@@ -523,7 +523,7 @@ class RaidDao extends GenericDao{
 		}
 		if(!$inRaid)
 			return 0;
-		$query = mysql_query("SELECT * FROM wow_event WHERE pid=$player and type='Queue' and rid=".$raid->getId());
+		$query = mysql_query("SELECT * FROM $prefix_event WHERE pid=$player and type='Queue' and rid=".$raid->getId());
 	
 		// If player hasn't been on queue:
 		if(mysql_num_rows($query)==0) {
@@ -531,12 +531,12 @@ class RaidDao extends GenericDao{
 			return 0;
 		} else {
 			// If player has gone AFK - Get the times the player went AFK, and check whether he returned
-			$timeline_query = mysql_query("SELECT time, type FROM wow_event WHERE pid=$player AND rid='".$raid->getId()."' AND (type='Queue' OR type='ReturnQueue' OR type='Add') ORDER BY time ASC");
+			$timeline_query = mysql_query("SELECT time, type FROM $prefix_event WHERE pid=$player AND rid='".$raid->getId()."' AND (type='Queue' OR type='ReturnQueue' OR type='Add') ORDER BY time ASC");
 			
 			while($timeline_result = mysql_fetch_assoc($timeline_query)) {
 				$timeline[] = $timeline_result['time'];
 			}
-			$query = "SELECT count(amount)*10 AS sum FROM wow_event WHERE type='Hour' AND rid=".$raid->getId()." AND pid IS NULL AND (";
+			$query = "SELECT count(amount)*10 AS sum FROM $prefix_event WHERE type='Hour' AND rid=".$raid->getId()." AND pid IS NULL AND (";
 			// Takes into account everything but eventually the last return
 			for($i=0;$i<floor(count($timeline)/2);$i++) {
 				if($i>0)
@@ -556,9 +556,9 @@ class RaidDao extends GenericDao{
 			// Fix so we always display something
 			$sum = $raid_result['sum'];
 			
-			$add_query = mysql_query("SELECT time FROM wow_event WHERE type='Add' AND rid=".$raid->getId()." AND pid=$player");
+			$add_query = mysql_query("SELECT time FROM $prefix_event WHERE type='Add' AND rid=".$raid->getId()." AND pid=$player");
 			$add_result = mysql_fetch_assoc($add_query);
-			$query = "SELECT count(amount)*10 as sum FROM wow_event WHERE time>'$add_result[time]' AND pid IS NULL AND rid=".$raid->getId()." AND type='Hour'";
+			$query = "SELECT count(amount)*10 as sum FROM $prefix_event WHERE time>'$add_result[time]' AND pid IS NULL AND rid=".$raid->getId()." AND type='Hour'";
 			$raid_event_query = mysql_query($query);
 			$raid_result = mysql_fetch_assoc($raid_event_query);
 			$sum = $raid_result['sum'] - $sum;
@@ -587,7 +587,7 @@ class RaidDao extends GenericDao{
 			$itemPrice = $settingDao->getSetting("Item price");
 		}
 		
-		$query = mysql_query("SELECT count(*) as number, comment FROM wow_event WHERE type='Buy' AND pid=$player AND rid=".$raid->getId()." GROUP BY comment");
+		$query = mysql_query("SELECT count(*) as number, comment FROM $prefix_event WHERE type='Buy' AND pid=$player AND rid=".$raid->getId()." GROUP BY comment");
 
 		$number=0;
 		while($result = mysql_fetch_assoc($query))
@@ -612,12 +612,12 @@ class RaidDao extends GenericDao{
 		if(!is_a($raid, 'Raid'))
 			throw new Exception('Not a raid');
 		if($includeStartPoint) {
-			$query = mysql_query("SELECT sum(amount) as sum FROM wow_event WHERE (type='Hour' OR type = 'Start') AND rid=".$raid->getId());
+			$query = mysql_query("SELECT sum(amount) as sum FROM $prefix_event WHERE (type='Hour' OR type = 'Start') AND rid=".$raid->getId());
 			$result = mysql_fetch_assoc($query);
 			return $result['sum'] == NULL ? 0 : $result['sum'];
 		}
 		else {
-			$query = mysql_query("SELECT sum(amount) as sum FROM wow_event WHERE type='Hour' AND rid=".$raid->getId());
+			$query = mysql_query("SELECT sum(amount) as sum FROM $prefix_event WHERE type='Hour' AND rid=".$raid->getId());
 			$result = mysql_fetch_assoc($query);
 			return $result['sum'] == NULL ? 0 : $result['sum'];
 		}		
@@ -626,7 +626,7 @@ class RaidDao extends GenericDao{
 	function isSigned($raid) {
 		if(!is_a($raid, 'Raid'))
 			throw new Exception($raid->get_class().' is not a raid');
-		$query = mysql_query("SELECT * FROM wow_event AS e JOIN wow_player USING (pid) WHERE rid=".$raid->GetId()." AND type='Signup' AND SHA1(CONCAT(username, sha1(password)))='$_SESSION[dkp]' AND time >= (SELECT MAX(time) FROM wow_event WHERE rid=e.rid and pid=e.pid AND (type='unsign' OR type='signup'))");
+		$query = mysql_query("SELECT * FROM $prefix_event AS e JOIN $prefix_player USING (pid) WHERE rid=".$raid->GetId()." AND type='Signup' AND SHA1(CONCAT(username, sha1(password)))='$_SESSION[dkp]' AND time >= (SELECT MAX(time) FROM $prefix_event WHERE rid=e.rid and pid=e.pid AND (type='unsign' OR type='signup'))");
 		if(mysql_num_rows($query)==1)
 			return true;
 		else
@@ -640,7 +640,7 @@ class RaidDao extends GenericDao{
 		$players = $this->getPlayersInRaid($raid);
 		$this->addRaid($raid->getInid(), "now()", "active");
 
-		$query = mysql_query("SELECT * FROM wow_raid LEFT JOIN wow_instance USING(inid) ORDER BY rid DESC LIMIT 1");
+		$query = mysql_query("SELECT * FROM $prefix_raid LEFT JOIN wow_instance USING(inid) ORDER BY rid DESC LIMIT 1");
 		$newRaid = new Raid(mysql_fetch_assoc($query));
 		
 		foreach($players as $player) {
@@ -654,7 +654,7 @@ class RaidDao extends GenericDao{
 	}
 	
 	function getDecayFactor($raid) {
-		$query = mysql_query("SELECT count(*) as num from wow_raid where start >= '".$raid->getStartSQL()."' and decay=1");
+		$query = mysql_query("SELECT count(*) as num from $prefix_raid where start >= '".$raid->getStartSQL()."' and decay=1");
 		$result = mysql_fetch_assoc($query);
 		
 		$numberOfDecayedRaids = $result['num'];
@@ -674,7 +674,7 @@ class RaidDao extends GenericDao{
 	}
 
 	function moveEvent($eid, $time) {
-		$query = mysql_query("UPDATE wow_event set time='$time' where eid=$eid");
+		$query = mysql_query("UPDATE $prefix_event set time='$time' where eid=$eid");
 		if(mysql_error()) {
 			throw new Exception("Unable to move event ". mysql_error());
 		}
